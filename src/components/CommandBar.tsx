@@ -28,31 +28,29 @@ export function CommandBar(){
         }
         case 'pause': {
           if (c.target.toLowerCase()==='all') { dispatch({type:'PAUSE_ALL'}); pushLog('success','Paused all'); }
-          else { const t = findByLabel(c.target); if (t) { dispatch({type:'PAUSE', id:t.id}); pushLog('success',`Paused ${t.label}`);} else pushLog('error',`No timer found: ${c.target}`); }
+          else { const matched = findByLabel(c.target); if (matched.length) { matched.forEach(t=> dispatch({type:'PAUSE', id:t.id})); pushLog('success', matched.length===1 ? `Paused ${matched[0].label}` : `Paused ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer found: ${c.target}`); }
           break;
         }
         case 'start': {
           if (c.target.toLowerCase()==='all') { dispatch({type:'START_ALL'}); pushLog('success','Started all'); }
-          else { const t = findByLabel(c.target); if (t) { dispatch({type:'START', id:t.id}); pushLog('success',`Started ${t.label}`);} else pushLog('error',`No timer: ${c.target}`); }
+          else { const matched = findByLabel(c.target); if (matched.length) { matched.forEach(t=> dispatch({type:'START', id:t.id})); pushLog('success', matched.length===1 ? `Started ${matched[0].label}` : `Started ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer: ${c.target}`); }
           break;
         }
         case 'stop': {
-          if (c.target.toLowerCase()==='all') { // stop all = pause and reset all
-            // dispatch stop per timer
-            // we need timers list
+          if (c.target.toLowerCase()==='all') {
             getTimers().forEach(t=> dispatch({type:'STOP', id:t.id}));
             pushLog('success','Stopped all (reset)');
-          } else { const t=findByLabel(c.target); if(t){dispatch({type:'STOP', id:t.id}); pushLog('success',`Stopped ${t.label} (reset)`);} else pushLog('error',`No timer: ${c.target}`);}
+          } else { const matched=findByLabel(c.target); if(matched.length){matched.forEach(t=> dispatch({type:'STOP', id:t.id})); pushLog('success', matched.length===1 ? `Stopped ${matched[0].label} (reset)` : `Stopped ${matched.length}× "${c.target}" (reset)`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
         case 'delete': {
           if (c.target.toLowerCase()==='all') { getTimers().forEach(t=> dispatch({type:'DELETE', id:t.id})); pushLog('success','Deleted all'); }
-          else { const t=findByLabel(c.target); if(t){dispatch({type:'DELETE', id:t.id}); pushLog('success',`Deleted ${t.label}`);} else pushLog('error',`No timer: ${c.target}`);}
+          else { const matched=findByLabel(c.target); if(matched.length){matched.forEach(t=> dispatch({type:'DELETE', id:t.id})); pushLog('success', matched.length===1 ? `Deleted ${matched[0].label}` : `Deleted ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
         case 'toggle': {
           if (c.target.toLowerCase()==='all') { getTimers().forEach(t=> dispatch({type:'TOGGLE_VISUAL', id:t.id})); pushLog('success','Toggled all visuals'); }
-          else { const t=findByLabel(c.target); if(t){dispatch({type:'TOGGLE_VISUAL', id:t.id}); pushLog('success',`Toggled ${t.label}`);} else pushLog('error',`No timer: ${c.target}`);}
+          else { const matched=findByLabel(c.target); if(matched.length){matched.forEach(t=> dispatch({type:'TOGGLE_VISUAL', id:t.id})); pushLog('success', matched.length===1 ? `Toggled ${matched[0].label}` : `Toggled ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
         case 'clear': { dispatch({type:'CLEAR_FINISHED'}); pushLog('success','Cleared finished'); break; }
@@ -70,7 +68,9 @@ export function CommandBar(){
   const timersState = useTimers();
   const findByLabel = (label:string)=>{
     const lower = label.toLowerCase();
-    return timersState.timers.find(t=> t.label.toLowerCase()===lower) || timersState.timers.find(t=> t.label.toLowerCase().includes(lower)) || null;
+    const exact = timersState.timers.filter(t=> t.label.toLowerCase()===lower);
+    if (exact.length) return exact;
+    return timersState.timers.filter(t=> t.label.toLowerCase().includes(lower));
   };
   const getTimers = ()=> timersState.timers;
 
