@@ -11,7 +11,7 @@ export function DigitalDisplay({ remainingMs, initialMs, status }:{remainingMs:n
       <div className="mt-3 w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full transition-all duration-100 ${isAlert?'bg-red-500': status==='finished'?'bg-zinc-600':'bg-violet-500'}`} style={{width:`${pct*100}%`}} />
       </div>
-      <div className="mt-1 text-xs text-zinc-500">{Math.round(pct*100)}% remaining • {status}</div>
+      <div className="mt-1 text-xs text-zinc-500">{Math.round(pct*100)}% remaining</div>
     </div>
   );
 }

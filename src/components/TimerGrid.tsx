@@ -31,7 +31,7 @@ export function TimerGrid({ audio }:{audio: ReturnType<typeof useAudio>}) {
         <div className="mt-6 w-full max-w-2xl text-left bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
           <div className="px-5 py-3.5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
             <h3 className="text-xs font-semibold tracking-widest uppercase text-zinc-400">Commands</h3>
-            <span className="text-[11px] font-mono text-zinc-500">separate with <span className="text-zinc-400">;</span> • type <span className="text-violet-400">help</span> to toggle</span>
+            <span className="text-[11px] font-mono text-zinc-500">separate with <span className="text-zinc-400">;</span></span>
           </div>
 
           <div className="p-5 space-y-2.5">
@@ -55,33 +55,29 @@ export function TimerGrid({ audio }:{audio: ReturnType<typeof useAudio>}) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">pause &lt;label|all&gt;</code>
+                <code className="text-xs font-mono text-zinc-200">pause &lt;all|label&gt;</code>
                 <span className="text-[11px] text-zinc-500">pause</span>
               </div>
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">start &lt;label|all&gt;</code>
+                <code className="text-xs font-mono text-zinc-200">start &lt;all|label&gt;</code>
                 <span className="text-[11px] text-zinc-500">start</span>
               </div>
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">stop &lt;label|all&gt;</code>
+                <code className="text-xs font-mono text-zinc-200">stop &lt;all|label&gt;</code>
                 <span className="text-[11px] text-zinc-500">reset</span>
               </div>
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">delete &lt;label|all&gt;</code>
+                <code className="text-xs font-mono text-zinc-200">delete &lt;all|label&gt;</code>
                 <span className="text-[11px] text-zinc-500">remove</span>
               </div>
 
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">toggle &lt;label|all&gt;</code>
+                <code className="text-xs font-mono text-zinc-200">toggle &lt;all|label&gt;</code>
                 <span className="text-[11px] text-zinc-500">clock ↔ digital</span>
               </div>
               <div className="flex items-center justify-between bg-zinc-800/50 border border-zinc-800 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-200">clear</code>
-                <span className="text-[11px] text-zinc-500">/ clear finished</span>
-              </div>
-              <div className="flex items-center justify-between bg-zinc-800/30 border border-dashed border-zinc-700 rounded-xl px-3 py-2">
-                <code className="text-xs font-mono text-zinc-400">help</code>
-                <span className="text-[11px] text-zinc-500">show this</span>
+                <code className="text-xs font-mono text-zinc-200">clear &lt;timer|history&gt;</code>
+                <span className="text-[11px] text-zinc-500">clear timer / history</span>
               </div>
             </div>
           </div>

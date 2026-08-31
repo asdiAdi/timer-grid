@@ -51,6 +51,18 @@ export function parseDuration(input: string): number | null {
   return null;
 }
 
+export function formatHuman(ms: number): string {
+  const totalSec = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  const parts: string[] = [];
+  if (h) parts.push(`${h}h`);
+  if (m) parts.push(`${m}m`);
+  if (s || parts.length === 0) parts.push(`${s}s`);
+  return parts.join(' ');
+}
+
 export function progress(initial: number, remaining: number): number {
   if (initial <=0) return 0;
   return Math.max(0, Math.min(1, remaining/initial));

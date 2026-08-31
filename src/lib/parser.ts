@@ -20,7 +20,7 @@ export function parseCommandLine(input: string): ParsedCommand[] {
   // help / clear quick paths
   if (/^help$|^h$|^\?$/.test(lower.toLowerCase())) return [{kind:'help'}];
   if (/^clear\s+(history|log)$/i.test(lower)) return [{kind:'clearHistory'}];
-  if (/^clear(\s+finished)?$/i.test(lower)) return [{kind:'clear'}];
+  if (/^clear(\s+(finished|timer|timers))?$/i.test(lower)) return [{kind:'clear'}];
 
   // split by ; or newline first, then also handle comma/and for add commands?
   // We keep ';' and newline as command separators. Comma is used inside add for multiple timers.
@@ -58,7 +58,9 @@ function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
     case 'clock': return {kind:'toggle', target: rest||'all'};
     case 'clear': {
       if (/^(history|log)$/i.test(rest)) return {kind:'clearHistory'};
-      return {kind:'clear'};
+      if (/^(finished|timer|timers)?$/i.test(rest)) return {kind:'clear'};
+      if (!rest) return {kind:'clear'};
+      return { kind:'unknown', raw:seg, error:`Unknown clear target: "${rest}". Use "clear", "clear timer", or "clear history"` };
     }
     case 'help': return {kind:'help'};
     default: return {kind:'unknown', raw:seg, error:'Unknown verb'};
@@ -120,13 +122,12 @@ export function helpText(): string {
     '  add 5m eggs              — add timer',
     '  add 25m focus, 5m break  — multiple timers (comma, ; or space separated)',
     '  add 1h30m roast / add 05:00 pasta / add 90s tea',
-    '  pause <label|all>        — pause',
-    '  start <label|all>',
-    '  stop <label|all>         — reset to initial duration',
-    '  delete <label|all>', 
-  '  toggle <label|all>       — switch clock ↔ digital',
-    '  clear / clear finished   — remove finished timers',
-    '  clear history / clear log— clear command history',
+    '  pause <all|label>        — pause',
+    '  start <all|label>',
+    '  stop <all|label>         — reset to initial duration',
+    '  delete <all|label>', 
+  '  toggle <all|label>       — switch clock ↔ digital',
+    '  clear <timer|history>    — clear timer / history',
     '  help                     — show this',
     'Tips: durations support 1h 30m 15s, 90s, 5m, 01:30:00. Separate commands with ;',
   ].join('\n');

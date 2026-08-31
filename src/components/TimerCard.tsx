@@ -1,4 +1,5 @@
 import type { Timer } from '../types';
+import { formatHuman } from '../lib/time';
 import { DigitalDisplay } from './DigitalDisplay';
 import { AnalogClock } from './AnalogClock';
 
@@ -21,7 +22,7 @@ export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleV
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className={`font-semibold truncate pr-2 ${isAlert ? 'text-zinc-900' : 'text-zinc-100'}`} title={timer.label}>{timer.label}</h3>
-          <p className={`text-xs ${isAlert ? 'text-zinc-600' : 'text-zinc-500'}`}>initial {Math.ceil(timer.initialMs/1000)}s • sound #{timer.soundIndex+1}</p>
+          <p className={`text-xs ${isAlert ? 'text-zinc-600' : 'text-zinc-500'}`}>initial {formatHuman(timer.initialMs)}</p>
         </div>
         <button onClick={onToggleVisual} title="Toggle clock/digital" className={`shrink-0 rounded-lg border px-2 py-1 text-xs ${isAlert ? 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200' : 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}>
           {timer.visual==='digital' ? '⏰ Clock' : '🔢 Digital'}

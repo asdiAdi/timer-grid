@@ -44,7 +44,7 @@ export function AnalogClock({ remainingMs, initialMs, status }:{remainingMs:numb
         <circle cx={c} cy={c} r={5} fill={isAlert?'#ef4444':'#8b5cf6'} stroke="#18181b" strokeWidth={2} />
       </svg>
       <div className="mt-2 font-mono text-sm tabular-nums text-zinc-400">
-        {String(Math.floor(totalSec/3600)).padStart(2,'0')}:{String(m).padStart(2,'0')}:{String(s).padStart(2,'0')} • {status}
+        {String(Math.floor(totalSec/3600)).padStart(2,'0')}:{String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}
       </div>
     </div>
   );
