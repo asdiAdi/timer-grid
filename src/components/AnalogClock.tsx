@@ -17,7 +17,7 @@ export function AnalogClock({ remainingMs, initialMs, status }:{remainingMs:numb
   const r=size/2 -8;
 
   return (
-    <div className={`flex flex-col items-center py-4 ${isAlert?'animate-alertPulse':''}`}>
+    <div className="flex flex-col items-center py-4">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className={`${isAlert?'drop-shadow-[0_0_12px_rgba(239,68,68,0.7)]':''}`}>
         <circle cx={c} cy={c} r={r} fill="#18181b" stroke={isAlert?'#ef4444':'#3f3f46'} strokeWidth={2} />
         {/* ticks */}

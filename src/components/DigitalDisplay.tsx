@@ -4,7 +4,7 @@ export function DigitalDisplay({ remainingMs, initialMs, status }:{remainingMs:n
   const pct = progress(initialMs, remainingMs);
   const isAlert = status==='alerting';
   return (
-    <div className={`relative flex flex-col items-center justify-center py-6 ${isAlert?'animate-alertPulse':''}`}>
+    <div className="relative flex flex-col items-center justify-center py-6">
       <div className={`font-mono text-4xl md:text-5xl font-bold tracking-wider tabular-nums ${isAlert?'text-red-400':'text-zinc-100'}`}>
         {formatMs(remainingMs)}
       </div>

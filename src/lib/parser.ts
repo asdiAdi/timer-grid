@@ -3,12 +3,12 @@ import { parseDuration } from './time';
 export type ParsedCommand =
   | { kind:'add'; timers:{label:string; ms:number}[]; raw:string }
   | { kind:'pause'; target:string }
-  | { kind:'resume'; target:string }
+  | { kind:'start'; target:string }
   | { kind:'stop'; target:string }
   | { kind:'delete'; target:string }
-  | { kind:'repeat'; target:string; count?: number|'infinite'|'off' }
   | { kind:'toggle'; target:string }
   | { kind:'clear' }
+  | { kind:'clearHistory' }
   | { kind:'help' }
   | { kind:'unknown'; raw:string; error:string };
 
@@ -19,6 +19,7 @@ export function parseCommandLine(input: string): ParsedCommand[] {
   const lower = input.trim();
   // help / clear quick paths
   if (/^help$|^h$|^\?$/.test(lower.toLowerCase())) return [{kind:'help'}];
+  if (/^clear\s+(history|log)$/i.test(lower)) return [{kind:'clearHistory'}];
   if (/^clear(\s+finished)?$/i.test(lower)) return [{kind:'clear'}];
 
   // split by ; or newline first, then also handle comma/and for add commands?
@@ -34,7 +35,7 @@ export function parseCommandLine(input: string): ParsedCommand[] {
 }
 
 function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
-  const m = seg.match(/^(add|pause|resume|stop|delete|remove|repeat|toggle|clock|clear|help)\b\s*(.*)$/i);
+  const m = seg.match(/^(add|pause|start|stop|delete|remove|toggle|clock|clear|help)\b\s*(.*)$/i);
   if (!m) {
     // try implicit add: if segment starts with duration like "5m eggs"
     const dur = parseDuration(seg.split(/\s+/)[0]);
@@ -49,27 +50,16 @@ function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
   switch(verb) {
     case 'add': return parseAdd(rest);
     case 'pause': return {kind:'pause', target: rest||'all'};
-    case 'resume': return {kind:'resume', target: rest||'all'};
+    case 'start': return {kind:'start', target: rest||'all'};
     case 'stop': return {kind:'stop', target: rest||'all'};
     case 'delete':
     case 'remove': return {kind:'delete', target: rest||'all'};
-    case 'repeat': {
-      // repeat <label> [3|infinite|off|x3]
-      const parts = rest.split(/\s+/).filter(Boolean);
-      if (!parts.length) return {kind:'unknown', raw:seg, error:'repeat needs a label, e.g. "repeat eggs" or "repeat eggs 3"'};
-      const label = parts[0];
-      const cntRaw = parts[1]?.toLowerCase();
-      let count: number|'infinite'|'off'|undefined;
-      if (!cntRaw) count = 'infinite';
-      else if (cntRaw==='off'||cntRaw==='stop'||cntRaw==='0') count='off';
-      else if (cntRaw==='infinite'||cntRaw==='inf'||cntRaw==='loop') count='infinite';
-      else if (/^x?\d+$/.test(cntRaw)) count = parseInt(cntRaw.replace('x',''),10);
-      else count='infinite';
-      return {kind:'repeat', target:label, count} as ParsedCommand;
-    }
     case 'toggle':
     case 'clock': return {kind:'toggle', target: rest||'all'};
-    case 'clear': return {kind:'clear'};
+    case 'clear': {
+      if (/^(history|log)$/i.test(rest)) return {kind:'clearHistory'};
+      return {kind:'clear'};
+    }
     case 'help': return {kind:'help'};
     default: return {kind:'unknown', raw:seg, error:'Unknown verb'};
   }
@@ -131,12 +121,12 @@ export function helpText(): string {
     '  add 25m focus, 5m break  — multiple timers (comma, ; or space separated)',
     '  add 1h30m roast / add 05:00 pasta / add 90s tea',
     '  pause <label|all>        — pause',
-    '  resume <label|all>',
+    '  start <label|all>',
     '  stop <label|all>         — reset to initial duration',
-    '  delete <label|all>',
-    '  repeat <label> [3|infinite|off] — toggle repeat',
-    '  toggle <label|all>       — switch clock ↔ digital',
+    '  delete <label|all>', 
+  '  toggle <label|all>       — switch clock ↔ digital',
     '  clear / clear finished   — remove finished timers',
+    '  clear history / clear log— clear command history',
     '  help                     — show this',
     'Tips: durations support 1h 30m 15s, 90s, 5m, 01:30:00. Separate commands with ;',
   ].join('\n');

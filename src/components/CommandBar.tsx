@@ -1,14 +1,11 @@
 import { useState, useRef } from 'react';
 import { useTimers } from '../store/TimersContext';
 import { helpText, parseCommandLine } from '../lib/parser';
-import { parseDuration } from '../lib/time';
 
 export function CommandBar(){
   const { dispatch } = useTimers();
   const [input, setInput] = useState('');
-  const [log, setLog] = useState<{type:'info'|'error'|'success', text:string}[]>([
-    {type:'info', text:'Welcome — type "help" for commands. E.g. "add 5m eggs; add 1h roast" or "add 25m focus, 5m break"'}
-  ]);
+  const [log, setLog] = useState<{type:'info'|'error'|'success', text:string}[]>([]);
   const [showHelp, setShowHelp] = useState(false);
   const historyRef = useRef<string[]>([]);
   const histIdxRef = useRef(-1);
@@ -34,9 +31,9 @@ export function CommandBar(){
           else { const t = findByLabel(c.target); if (t) { dispatch({type:'PAUSE', id:t.id}); pushLog('success',`Paused ${t.label}`);} else pushLog('error',`No timer found: ${c.target}`); }
           break;
         }
-        case 'resume': {
-          if (c.target.toLowerCase()==='all') { dispatch({type:'RESUME_ALL'}); pushLog('success','Resumed all'); }
-          else { const t = findByLabel(c.target); if (t) { dispatch({type:'RESUME', id:t.id}); pushLog('success',`Resumed ${t.label}`);} else pushLog('error',`No timer: ${c.target}`); }
+        case 'start': {
+          if (c.target.toLowerCase()==='all') { dispatch({type:'START_ALL'}); pushLog('success','Started all'); }
+          else { const t = findByLabel(c.target); if (t) { dispatch({type:'START', id:t.id}); pushLog('success',`Started ${t.label}`);} else pushLog('error',`No timer: ${c.target}`); }
           break;
         }
         case 'stop': {
@@ -53,21 +50,13 @@ export function CommandBar(){
           else { const t=findByLabel(c.target); if(t){dispatch({type:'DELETE', id:t.id}); pushLog('success',`Deleted ${t.label}`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
-        case 'repeat': {
-          const t=findByLabel(c.target);
-          if (!t) { pushLog('error',`No timer: ${c.target}`); break; }
-          if (c.count==='off') { dispatch({type:'SET_REPEAT', id:t.id, repeat:false}); pushLog('success',`Repeat off for ${t.label}`); }
-          else if (c.count==='infinite') { dispatch({type:'SET_REPEAT', id:t.id, repeat:true}); pushLog('success',`Repeat infinite for ${t.label}`); }
-          else if (typeof c.count==='number') { dispatch({type:'SET_REPEAT', id:t.id, repeat:c.count}); pushLog('success',`Repeat ${c.count}× for ${t.label}`); }
-          else { dispatch({type:'SET_REPEAT', id:t.id, repeat: !t.repeat}); pushLog('success',`Toggled repeat for ${t.label}`); }
-          break;
-        }
         case 'toggle': {
           if (c.target.toLowerCase()==='all') { getTimers().forEach(t=> dispatch({type:'TOGGLE_VISUAL', id:t.id})); pushLog('success','Toggled all visuals'); }
           else { const t=findByLabel(c.target); if(t){dispatch({type:'TOGGLE_VISUAL', id:t.id}); pushLog('success',`Toggled ${t.label}`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
         case 'clear': { dispatch({type:'CLEAR_FINISHED'}); pushLog('success','Cleared finished'); break; }
+        case 'clearHistory': { setLog([]); setShowHelp(false); break; }
         case 'help': { setShowHelp(v=>!v); break; }
         case 'unknown': { pushLog('error', c.error); break; }
       }
@@ -101,9 +90,10 @@ export function CommandBar(){
   };
 
   return (
-    <div className="fixed bottom-0 inset-x-0 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80">
+    <div className="fixed bottom-0 inset-x-0 pb-6 bg-transparent pointer-events-none">
+      <div className="mx-auto w-[75%] border border-zinc-800 bg-zinc-950/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80 rounded-2xl overflow-hidden shadow-2xl pointer-events-auto">
       {/* log */}
-      <div className="max-h-28 overflow-auto px-4 py-2 space-y-1 text-xs font-mono">
+      <div className="max-h-[10.5rem] overflow-auto px-4 py-2 space-y-1 text-xs font-mono">
         {log.slice(-4).map((l,i)=>(
           <div key={i} className={`${l.type==='error'?'text-red-400': l.type==='success'?'text-emerald-400':'text-zinc-500'}`}>{l.text}</div>
         ))}
@@ -115,35 +105,12 @@ export function CommandBar(){
           value={input}
           onChange={e=>setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder='Type command: "add 5m eggs, 2m toast" or "pause all" — Enter to run, help for list'
+          placeholder=" Enter"
           className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500"
         />
         <button onClick={()=>{execute(input); setInput('');}} className="shrink-0 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-violet-700">Send</button>
-        <button onClick={()=>setShowHelp(v=>!v)} title="Help" className="shrink-0 rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700">?</button>
       </div>
-      <QuickAddInline />
-    </div>
-  );
-}
-
-function QuickAddInline(){
-  const { dispatch } = useTimers();
-  const [label,setLabel]=useState('');
-  const [dur,setDur]=useState('5m');
-  const add = ()=>{
-    const ms = parseDuration(dur);
-    if (!ms || ms<=0) return alert('Invalid duration. Try 5m, 90s, 1h, 01:30');
-    const finalLabel = label.trim() || `Timer ${Date.now()%1000}`;
-    dispatch({type:'ADD', payload:{label: finalLabel, ms}});
-    setLabel('');
-  };
-  return (
-    <div className="hidden md:flex items-center gap-2 px-3 pb-3">
-      <span className="text-xs text-zinc-500">Quick add:</span>
-      <input value={dur} onChange={e=>setDur(e.target.value)} placeholder="5m" className="w-24 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-100" />
-      <input value={label} onChange={e=>setLabel(e.target.value)} placeholder="label" className="w-32 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-100" />
-      <button onClick={add} className="rounded-lg bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Add</button>
-      <span className="text-[11px] text-zinc-600 ml-2">Supports 1h30m, 90s, 05:00</span>
+      </div>
     </div>
   );
 }

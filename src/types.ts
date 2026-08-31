@@ -10,23 +10,18 @@ export interface Timer {
   endAt: number | null;
   visual: VisualMode;
   soundIndex: number;
-  repeat: boolean | number; // false, true (=infinite), or count remaining repeats
-  repeatCountOriginal?: number;
   alertingSince?: number;
 }
 
 export type TimerAction =
-  | { type: 'ADD'; payload: { label: string; ms: number; repeat?: boolean | number } }
-  | { type: 'ADD_MANY'; payload: { label: string; ms: number; repeat?: boolean | number }[] }
+  | { type: 'ADD'; payload: { label: string; ms: number } }
+  | { type: 'ADD_MANY'; payload: { label: string; ms: number }[] }
   | { type: 'PAUSE'; id: string }
-  | { type: 'RESUME'; id: string }
+  | { type: 'START'; id: string }
   | { type: 'STOP'; id: string }
   | { type: 'DELETE'; id: string }
   | { type: 'TOGGLE_VISUAL'; id: string }
-  | { type: 'SET_REPEAT'; id: string; repeat: boolean | number }
   | { type: 'TICK'; now: number }
-  | { type: 'DISMISS'; id: string }
   | { type: 'PAUSE_ALL' }
-  | { type: 'RESUME_ALL' }
-  | { type: 'CLEAR_FINISHED' }
-  | { type: 'REPEAT_NOW'; id: string };
+  | { type: 'START_ALL' }
+  | { type: 'CLEAR_FINISHED' };
