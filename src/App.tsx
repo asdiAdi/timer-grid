@@ -3,10 +3,10 @@ import { TimerGrid } from './components/TimerGrid';
 import { CommandBar } from './components/CommandBar';
 import { useAudio } from './hooks/useAudio';
 
-function Header({audio}:{audio: ReturnType<typeof useAudio>}){
+function Header() {
 
   const { timers, dispatch } = useTimers();
-  const running = timers.filter(t=>t.status==='running').length;
+  const running = timers.filter(t => t.status === 'running').length;
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
@@ -18,21 +18,20 @@ function Header({audio}:{audio: ReturnType<typeof useAudio>}){
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={()=>dispatch({type:'PAUSE_ALL'})} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Pause All</button>
-          <button onClick={()=>dispatch({type:'START_ALL'})} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Start All</button>
-          <button onClick={()=>dispatch({type:'CLEAR_FINISHED'})} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Clear Finished</button>
-          {!audio.enabled && <span className="text-[11px] text-amber-400">Click anywhere to enable audio</span>}
+          <button onClick={() => dispatch({ type: 'PAUSE_ALL' })} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Pause All</button>
+          <button onClick={() => dispatch({ type: 'START_ALL' })} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Start All</button>
+          <button onClick={() => dispatch({ type: 'CLEAR_FINISHED' })} className="rounded-xl bg-zinc-800 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700">Clear Finished</button>
         </div>
       </div>
     </header>
   );
 }
 
-function AppInner(){
+function AppInner() {
   const audio = useAudio();
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950">
-      <Header audio={audio} />
+      <Header />
       <main className="flex-1 mx-auto w-full max-w-7xl pb-40">
         <TimerGrid audio={audio} />
       </main>
@@ -41,6 +40,6 @@ function AppInner(){
   );
 }
 
-export default function App(){
+export default function App() {
   return <TimersProvider><AppInner /></TimersProvider>;
 }
