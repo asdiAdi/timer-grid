@@ -24,4 +24,5 @@ export type TimerAction =
   | { type: 'TICK'; now: number }
   | { type: 'PAUSE_ALL' }
   | { type: 'START_ALL' }
-  | { type: 'CLEAR_FINISHED' };
+  | { type: 'CLEAR_FINISHED' }
+  | { type: 'HYDRATE'; state: { timers: Timer[]; nextSound: number } };

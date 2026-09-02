@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import type { Timer, TimerAction } from '../types';
+import { STORAGE_KEY, loadPersistedState, savePersistedState } from '../lib/persistence';
 
 type State = { timers: Timer[]; nextSound: number };
 
 const initialState: State = { timers: [], nextSound: 0 };
+
+function getInitialState(): State {
+  const loaded = loadPersistedState();
+  return loaded ?? initialState;
+}
 
 function reducer(state: State, action: TimerAction): State {
   switch(action.type){
@@ -56,6 +62,9 @@ function reducer(state: State, action: TimerAction): State {
     case 'CLEAR_FINISHED': {
       return { ...state, timers: state.timers.filter(t=> t.status!=='finished' && t.status!=='alerting') };
     }
+    case 'HYDRATE': {
+      return { timers: action.state.timers, nextSound: action.state.nextSound };
+    }
     case 'TICK': {
       const now = action.now;
       let changed = false;
@@ -88,7 +97,7 @@ type Ctx = State & {
 const TimersCtx = createContext<Ctx | null>(null);
 
 export function TimersProvider({children}:{children:React.ReactNode}){
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState, getInitialState);
   const add = useCallback((label:string, ms:number)=> dispatch({type:'ADD', payload:{label, ms}}), []);
   const addMany = useCallback((items:{label:string; ms:number}[])=> dispatch({type:'ADD_MANY', payload: items}), []);
 
@@ -103,6 +112,40 @@ export function TimersProvider({children}:{children:React.ReactNode}){
     rafRef.current = id as unknown as number;
     return ()=> { if (rafRef.current) clearTimeout(rafRef.current); };
   },[]);
+
+  // persistence: only on status-changing actions (not every TICK remainingMs drift)
+  const prevRef = useRef<string>('');
+  useEffect(()=>{
+    const key = JSON.stringify(state.timers.map(t=>[t.id, t.status, t.endAt, t.initialMs, t.label, t.visual, t.soundIndex]));
+    if (key === prevRef.current) return;
+    prevRef.current = key;
+    savePersistedState(state.timers, state.nextSound);
+  }, [state.timers, state.nextSound]);
+
+  // flush on page hide
+  useEffect(()=>{
+    const flush = ()=> savePersistedState(state.timers, state.nextSound);
+    document.addEventListener('visibilitychange', flush);
+    window.addEventListener('pagehide', flush);
+    return ()=> { document.removeEventListener('visibilitychange', flush); window.removeEventListener('pagehide', flush); };
+  }, [state.timers, state.nextSound]);
+
+  // cross-tab sync (seamless, no reload)
+  const stateRef = useRef(state);
+  useEffect(()=>{ stateRef.current = state; }, [state]);
+  useEffect(()=>{
+    const onStorage = (e: StorageEvent)=>{
+      if (e.key !== STORAGE_KEY) return;
+      const loaded = loadPersistedState();
+      const next = loaded ?? initialState;
+      const cur = stateRef.current;
+      if (JSON.stringify(next) !== JSON.stringify({ timers: cur.timers, nextSound: cur.nextSound })) {
+        dispatch({ type: 'HYDRATE', state: next });
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return ()=> window.removeEventListener('storage', onStorage);
+  }, []);
 
   return <TimersCtx.Provider value={{...state, dispatch, add, addMany}}>{children}</TimersCtx.Provider>;
 }
