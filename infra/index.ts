@@ -3,7 +3,7 @@ import * as cdk from "aws-cdk-lib";
 
 const app = new cdk.App();
 
-new StaticSiteStack(app, "StaticSiteStack", {
+new StaticSiteStack(app, "TimerGridStack", {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT!,
     region: "us-east-1", //default,
