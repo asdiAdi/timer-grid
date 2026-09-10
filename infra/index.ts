@@ -5,7 +5,7 @@ const app = new cdk.App();
 
 new StaticSiteStack(app, "StaticSiteStack", {
   env: {
-    account: "123456789012",
+    account: process.env.CDK_DEFAULT_ACCOUNT!,
     region: "us-east-1", //default,
   },
   staticSite: {
