@@ -50,7 +50,7 @@ jobs:
             done
 
       - name: Deploy frontend stack
-        run: npx cdk deploy --require-approval never
+        run: npm run deploy
 
       - name: Build the App
         run: npm run build
