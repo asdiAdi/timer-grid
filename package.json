@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "synth": "cdk synth -o dist-infra",
+    "deploy": "cdk deploy --all --require-approval never"
   },
   "dependencies": {
-    "@asdi/aws-infra": "^0.1.2",
+    "@asdi/aws-infra": "^0.4.2",
     "aws-cdk-lib": "^2.268.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
