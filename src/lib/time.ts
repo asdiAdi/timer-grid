@@ -67,3 +67,9 @@ export function progress(initial: number, remaining: number): number {
   if (initial <=0) return 0;
   return Math.max(0, Math.min(1, remaining/initial));
 }
+
+export function formatWallClock(date: Date): { time: string; date: string } {
+  const time = date.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const datePart = date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  return { time, date: datePart };
+}

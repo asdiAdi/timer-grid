@@ -26,6 +26,7 @@ const deploy = new GithubDeployStack(app, "TimerGridDeployStack", {
     branch: "main",
   },
   managedPolicies: [site.staticSite.managedPolicy],
+  ssmParameterPrefixes: ["/timer-grid/github-action/prod"],
 });
 
 new cdk.CfnOutput(site, "TimerGridBucket", {
