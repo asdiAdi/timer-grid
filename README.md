@@ -29,3 +29,7 @@ npm run deploy
 ```
 
 Push to `main` deploys automatically via `.github/workflows/deploy.yml`: build → `cdk deploy` → `aws s3 sync dist/` → CloudFront invalidation. Bucket ID, distribution ID come from SSM `/timer-grid/github-action/prod/*`; role/region from `AWS_ROLE_TO_ASSUME` / `AWS_REGION`.
+
+## Infrastructure Diagram
+
+![diagram](./infra.svg)
