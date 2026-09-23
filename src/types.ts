@@ -21,6 +21,7 @@ export type TimerAction =
   | { type: 'STOP'; id: string }
   | { type: 'DELETE'; id: string }
   | { type: 'TOGGLE_VISUAL'; id: string }
+  | { type: 'SET_REMAINING'; id: string; ms: number }
   | { type: 'TICK'; now: number }
   | { type: 'PAUSE_ALL' }
   | { type: 'START_ALL' }

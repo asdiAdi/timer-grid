@@ -3,17 +3,23 @@ import { formatHuman } from '../lib/time';
 import { DigitalDisplay } from './DigitalDisplay';
 import { AnalogClock } from './AnalogClock';
 
-export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleVisual }:{
+export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleVisual, onSetRemaining }:{
   timer: Timer;
   onPause:()=>void;
   onStart:()=>void;
   onStop:()=>void;
   onDelete:()=>void;
   onToggleVisual:()=>void;
+  onSetRemaining:(ms:number)=>void;
 }) {
   const isRunning = timer.status==='running';
   const isAlert = timer.status==='alerting';
   const isFinished = timer.status==='finished';
+  const locked = isAlert || isFinished;
+
+  const pauseIfRunning = ()=>{
+    if (timer.status==='running') onPause();
+  };
 
   return (
     <div className={`relative flex flex-col rounded-2xl border p-4 shadow-lg transition-all
@@ -29,11 +35,11 @@ export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleV
         </button>
       </div>
 
-      {/* visual */}
+      {/* visual — time text is click-to-edit, progress bar is directly draggable */}
       <div className="flex-1 flex flex-col justify-center">
         {timer.visual==='digital'
-          ? <DigitalDisplay remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} />
-          : <AnalogClock remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} />
+          ? <DigitalDisplay remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} label={timer.label} locked={locked} onPause={pauseIfRunning} onSetRemaining={onSetRemaining} />
+          : <AnalogClock remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} label={timer.label} locked={locked} onPause={pauseIfRunning} onSetRemaining={onSetRemaining} />
         }
       </div>
 

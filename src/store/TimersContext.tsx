@@ -51,6 +51,22 @@ function reducer(state: State, action: TimerAction): State {
     case 'TOGGLE_VISUAL': {
       return { ...state, timers: state.timers.map(t=> t.id===action.id ? {...t, visual: t.visual==='digital'?'analog':'digital'}:t) };
     }
+    case 'SET_REMAINING': {
+      const clampedInput = Math.round(action.ms);
+      if (!Number.isFinite(clampedInput)) return state;
+      return {
+        ...state,
+        timers: state.timers.map(t=> {
+          if (t.id!==action.id) return t;
+          if (t.status==='alerting' || t.status==='finished') return t;
+          const clamped = Math.max(0, Math.min(t.initialMs, clampedInput));
+          if (clamped===0) {
+            return { ...t, remainingMs: 0, endAt: null, status:'alerting' as const, alertingSince: Date.now() };
+          }
+          return { ...t, remainingMs: clamped, endAt: null, status:'paused' as const };
+        }),
+      };
+    }
     case 'PAUSE_ALL': {
       const now = Date.now();
       return { ...state, timers: state.timers.map(t=> t.status==='running' ? {...t, status:'paused' as const, remainingMs: t.endAt ? Math.max(0, t.endAt-now):t.remainingMs, endAt:null}:t) };
@@ -116,7 +132,7 @@ export function TimersProvider({children}:{children:React.ReactNode}){
   // persistence: only on status-changing actions (not every TICK remainingMs drift)
   const prevRef = useRef<string>('');
   useEffect(()=>{
-    const key = JSON.stringify(state.timers.map(t=>[t.id, t.status, t.endAt, t.initialMs, t.label, t.visual, t.soundIndex]));
+    const key = JSON.stringify(state.timers.map(t=>[t.id, t.status, t.endAt, t.initialMs, t.remainingMs, t.label, t.visual, t.soundIndex]));
     if (key === prevRef.current) return;
     prevRef.current = key;
     savePersistedState(state.timers, state.nextSound);

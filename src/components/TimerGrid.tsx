@@ -102,6 +102,7 @@ export function TimerGrid({ audio }:{audio: ReturnType<typeof useAudio>}) {
           onStop={()=> dispatch({type:'STOP', id:t.id})}
           onDelete={()=> dispatch({type:'DELETE', id:t.id})}
           onToggleVisual={()=> dispatch({type:'TOGGLE_VISUAL', id:t.id})}
+          onSetRemaining={(ms)=> dispatch({type:'SET_REMAINING', id:t.id, ms})}
         />
       ))}
     </div>
