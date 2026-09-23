@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# TimerGrid
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Browser multi-timer with a command-bar input. Timers persist in `localStorage` and keep running while the site is closed.
 
-Currently, two official plugins are available:
+- Add one or many timers: `5m eggs`, `1h30m, 90s, 1:30`
+- Pause, resume, stop, delete, toggle, repeat — by label or `all`
+- Static site, no backend or login
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Live: `https://timergrid.carladi.com`
 
-## React Compiler
+## Run locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Requires Node 20 + npm.
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm ci
+npm run dev
+npm run build
+npm run preview
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Deploy
+
+Infra is AWS CDK in `infra/index.ts`
+
+```sh
+npm run synth
+npm run deploy
+```
+
+Push to `main` deploys automatically via `.github/workflows/deploy.yml`: build → `cdk deploy` → `aws s3 sync dist/` → CloudFront invalidation. Bucket ID, distribution ID come from SSM `/timer-grid/github-action/prod/*`; role/region from `AWS_ROLE_TO_ASSUME` / `AWS_REGION`.
