@@ -48,11 +48,6 @@ export function CommandBar(){
           else { const matched=findByLabel(c.target); if(matched.length){matched.forEach(t=> dispatch({type:'DELETE', id:t.id})); pushLog('success', matched.length===1 ? `Deleted ${matched[0].label}` : `Deleted ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer: ${c.target}`);}
           break;
         }
-        case 'toggle': {
-          if (c.target.toLowerCase()==='all') { getTimers().forEach(t=> dispatch({type:'TOGGLE_VISUAL', id:t.id})); pushLog('success','Toggled all visuals'); }
-          else { const matched=findByLabel(c.target); if(matched.length){matched.forEach(t=> dispatch({type:'TOGGLE_VISUAL', id:t.id})); pushLog('success', matched.length===1 ? `Toggled ${matched[0].label}` : `Toggled ${matched.length}× "${c.target}"`);} else pushLog('error',`No timer: ${c.target}`);}
-          break;
-        }
         case 'clear': { dispatch({type:'CLEAR_FINISHED'}); pushLog('success','Cleared finished'); break; }
         case 'clearHistory': { setLog([]); setShowHelp(false); break; }
         case 'help': { setShowHelp(v=>!v); break; }

@@ -6,7 +6,6 @@ export type ParsedCommand =
   | { kind:'start'; target:string }
   | { kind:'stop'; target:string }
   | { kind:'delete'; target:string }
-  | { kind:'toggle'; target:string }
   | { kind:'clear' }
   | { kind:'clearHistory' }
   | { kind:'help' }
@@ -35,7 +34,7 @@ export function parseCommandLine(input: string): ParsedCommand[] {
 }
 
 function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
-  const m = seg.match(/^(add|pause|start|stop|delete|remove|toggle|clock|clear|help)\b\s*(.*)$/i);
+  const m = seg.match(/^(add|pause|start|stop|delete|remove|clear|help)\b\s*(.*)$/i);
   if (!m) {
     // try implicit add: if segment starts with duration like "5m eggs"
     const dur = parseDuration(seg.split(/\s+/)[0]);
@@ -54,8 +53,6 @@ function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
     case 'stop': return {kind:'stop', target: rest||'all'};
     case 'delete':
     case 'remove': return {kind:'delete', target: rest||'all'};
-    case 'toggle':
-    case 'clock': return {kind:'toggle', target: rest||'all'};
     case 'clear': {
       if (/^(history|log)$/i.test(rest)) return {kind:'clearHistory'};
       if (/^(finished|timer|timers)?$/i.test(rest)) return {kind:'clear'};
@@ -125,8 +122,7 @@ export function helpText(): string {
     '  pause <all|label>        — pause',
     '  start <all|label>',
     '  stop <all|label>         — reset to initial duration',
-    '  delete <all|label>', 
-  '  toggle <all|label>       — switch clock ↔ digital',
+    '  delete <all|label>',
     '  clear <timer|history>    — clear timer / history',
     '  help                     — show this',
     'Tips: durations support 1h 30m 15s, 90s, 5m, 01:30:00. Separate commands with ;',

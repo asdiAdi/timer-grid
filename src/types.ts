@@ -1,6 +1,4 @@
 export type TimerStatus = 'idle' | 'running' | 'paused' | 'finished' | 'alerting';
-export type VisualMode = 'digital' | 'analog';
-
 export interface Timer {
   id: string;
   label: string;
@@ -8,7 +6,6 @@ export interface Timer {
   remainingMs: number;
   status: TimerStatus;
   endAt: number | null;
-  visual: VisualMode;
   soundIndex: number;
   alertingSince?: number;
 }
@@ -20,7 +17,6 @@ export type TimerAction =
   | { type: 'START'; id: string }
   | { type: 'STOP'; id: string }
   | { type: 'DELETE'; id: string }
-  | { type: 'TOGGLE_VISUAL'; id: string }
   | { type: 'SET_REMAINING'; id: string; ms: number }
   | { type: 'TICK'; now: number }
   | { type: 'PAUSE_ALL' }

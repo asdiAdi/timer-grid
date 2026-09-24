@@ -1,15 +1,13 @@
 import type { Timer } from '../types';
 import { formatHuman } from '../lib/time';
 import { DigitalDisplay } from './DigitalDisplay';
-import { AnalogClock } from './AnalogClock';
 
-export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleVisual, onSetRemaining }:{
+export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onSetRemaining }:{
   timer: Timer;
   onPause:()=>void;
   onStart:()=>void;
   onStop:()=>void;
   onDelete:()=>void;
-  onToggleVisual:()=>void;
   onSetRemaining:(ms:number)=>void;
 }) {
   const isRunning = timer.status==='running';
@@ -30,17 +28,11 @@ export function TimerCard({ timer, onPause, onStart, onStop, onDelete, onToggleV
           <h3 className={`font-semibold truncate pr-2 ${isAlert ? 'text-zinc-900' : 'text-zinc-100'}`} title={timer.label}>{timer.label}</h3>
           <p className={`text-xs ${isAlert ? 'text-zinc-600' : 'text-zinc-500'}`}>initial {formatHuman(timer.initialMs)}</p>
         </div>
-        <button onClick={onToggleVisual} title="Toggle clock/digital" className={`shrink-0 rounded-lg border px-2 py-1 text-xs ${isAlert ? 'border-zinc-300 bg-zinc-100 text-zinc-700 hover:bg-zinc-200' : 'border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}>
-          {timer.visual==='digital' ? '⏰ Clock' : '🔢 Digital'}
-        </button>
       </div>
 
       {/* visual — time text is click-to-edit, progress bar is directly draggable */}
       <div className="flex-1 flex flex-col justify-center">
-        {timer.visual==='digital'
-          ? <DigitalDisplay remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} label={timer.label} locked={locked} onPause={pauseIfRunning} onSetRemaining={onSetRemaining} />
-          : <AnalogClock remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} label={timer.label} locked={locked} onPause={pauseIfRunning} onSetRemaining={onSetRemaining} />
-        }
+        <DigitalDisplay remainingMs={timer.remainingMs} initialMs={timer.initialMs} status={timer.status} label={timer.label} locked={locked} onPause={pauseIfRunning} onSetRemaining={onSetRemaining} />
       </div>
 
       {isFinished && (

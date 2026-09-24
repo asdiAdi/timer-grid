@@ -20,12 +20,16 @@ export function loadPersistedState(): { timers: Timer[]; nextSound: number } | n
     }
     const now = Date.now();
     const timers: Timer[] = parsed.timers.map((t) => {
-      if (t.status === 'running' && t.endAt !== null) {
-        const rem = Math.max(0, t.endAt - now);
-        if (rem === 0) return { ...t, remainingMs: 0, endAt: null, status: 'alerting' as const, alertingSince: now };
-        return { ...t, remainingMs: rem };
+      // strip legacy `visual` field from pre-digital-only state
+      const { visual: _v, ...rest } = t as Timer & { visual?: unknown };
+      void _v;
+      const base = rest as Timer;
+      if (base.status === 'running' && base.endAt !== null) {
+        const rem = Math.max(0, base.endAt - now);
+        if (rem === 0) return { ...base, remainingMs: 0, endAt: null, status: 'alerting' as const, alertingSince: now };
+        return { ...base, remainingMs: rem };
       }
-      return t;
+      return base;
     });
     return { timers, nextSound: parsed.nextSound ?? timers.length };
   } catch {
