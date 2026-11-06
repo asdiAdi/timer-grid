@@ -36,6 +36,20 @@ function reducer(state: State, action: TimerAction): State {
       });
       return { timers:[...state.timers, ...newTimers], nextSound: next };
     }
+    case 'ADD_MANY_RUNNING': {
+      const now = Date.now();
+      let next = state.nextSound;
+      const newTimers: Timer[] = action.payload.map(p=>{
+        const id = crypto.randomUUID();
+        const t: Timer = {
+          id, label: p.label, initialMs: p.ms, remainingMs: p.ms,
+          status:'running', endAt: now + p.ms,
+          soundIndex: next++,
+        };
+        return t;
+      });
+      return { timers:[...state.timers, ...newTimers], nextSound: next };
+    }
     case 'PAUSE': {
       return { ...state, timers: state.timers.map(t=> t.id===action.id && t.status==='running' ? { ...t, status:'paused' as const, remainingMs: t.endAt ? Math.max(0, t.endAt - Date.now()) : t.remainingMs, endAt:null } : t ) };
     }

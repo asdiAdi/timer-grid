@@ -13,6 +13,7 @@ export interface Timer {
 export type TimerAction =
   | { type: 'ADD'; payload: { label: string; ms: number } }
   | { type: 'ADD_MANY'; payload: { label: string; ms: number }[] }
+  | { type: 'ADD_MANY_RUNNING'; payload: { label: string; ms: number }[] }
   | { type: 'PAUSE'; id: string }
   | { type: 'START'; id: string }
   | { type: 'STOP'; id: string }

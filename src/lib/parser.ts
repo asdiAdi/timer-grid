@@ -1,7 +1,8 @@
-import { parseDuration } from './time';
+import { parseDuration, createDurationRegex } from './time';
 
 export type ParsedCommand =
   | { kind:'add'; timers:{label:string; ms:number}[]; raw:string }
+  | { kind:'coc'; timers:{label:string; ms:number}[]; raw:string }
   | { kind:'pause'; target:string }
   | { kind:'start'; target:string }
   | { kind:'stop'; target:string }
@@ -12,6 +13,10 @@ export type ParsedCommand =
   | { kind:'unknown'; raw:string; error:string };
 
 let autoCounter = 1;
+
+// Clash-style timer: in-game time is compressed 10:1 (10h in-game = 60min wall clock).
+const COC_SCALE = 0.1;
+const COC_MIN_MS = 1000;
 
 export function parseCommandLine(input: string): ParsedCommand[] {
   if (!input.trim()) return [];
@@ -34,6 +39,8 @@ export function parseCommandLine(input: string): ParsedCommand[] {
 }
 
 function parseSingle(seg: string): ParsedCommand | ParsedCommand[] {
+  // lowercase-only on purpose: "COC 5h" falls through to unknown
+  if (/^coc(?=\s|$)/.test(seg)) return parseCoc(seg.slice(3).trim());
   const m = seg.match(/^(add|pause|start|stop|delete|remove|clear|help)\b\s*(.*)$/i);
   if (!m) {
     // try implicit add: if segment starts with duration like "5m eggs"
@@ -78,7 +85,7 @@ function parseAdd(rest: string): ParsedCommand {
   for (const part of parts) {
     // part may contain multiple timers like "25m focus 5m break"
     // Find all duration occurrences with their indices
-    const durRegex = /(\d+:\d+:\d+|\d+:\d+|\d+(?:\.\d+)?\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)|\d+(?:\.\d+)?\s*(?:h|m|s))/gi;
+    const durRegex = createDurationRegex();
     // Build list of matches
     const matches: {ms:number; index:number; len:number; text:string}[] = [];
     let mm: RegExpExecArray | null;
@@ -111,6 +118,27 @@ function parseAdd(rest: string): ParsedCommand {
   }
   if (timers.length===0) return {kind:'unknown', raw:rest, error:'No valid timers found'} as unknown as ParsedCommand;
   return {kind:'add', timers, raw:rest};
+}
+
+export function parseCoc(rest: string): ParsedCommand {
+  if (!rest.trim()) return {kind:'unknown', raw:'coc', error:'coc needs a duration, e.g. "coc 5h"'};
+  const parts = rest.split(',').map(s=>s.trim()).filter(Boolean);
+  if (parts.length===0) return {kind:'unknown', raw:'coc', error:'coc needs a duration, e.g. "coc 5h"'};
+  const timers: {label:string; ms:number}[] = [];
+  for (const part of parts) {
+    // only a duration expression is allowed — anything else is a typo, not a label
+    const leftover = part.replace(createDurationRegex(), '').replace(/[\s,;]+/g,'');
+    const bareNumber = /^\d+(?:\.\d+)?$/.test(part);
+    if (leftover !== '' && !bareNumber) {
+      return {kind:'unknown', raw:`coc ${rest}`, error:`coc takes only a duration, e.g. "coc 5h" (got "${part}")`};
+    }
+    const ms = parseDuration(part);
+    if (ms===null || ms<=0) {
+      return {kind:'unknown', raw:`coc ${rest}`, error:`Could not parse duration in "${part}". Use e.g. "coc 5h", "coc 1d 6h", "coc 90s"`};
+    }
+    timers.push({ label:`coc(${autoCounter++})`, ms: Math.max(COC_MIN_MS, Math.round(ms*COC_SCALE)) });
+  }
+  return {kind:'coc', timers, raw:rest};
 }
 
 export function helpText(): string {

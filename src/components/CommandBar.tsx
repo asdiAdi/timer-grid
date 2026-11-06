@@ -20,8 +20,9 @@ export function CommandBar(){
     let added = 0;
     for (const c of cmds) {
       switch(c.kind){
-        case 'add': {
-          dispatch({type:'ADD_MANY', payload: c.timers.map(t=>({label:t.label, ms:t.ms}))});
+        case 'add':
+        case 'coc': {
+          dispatch({type: c.kind==='coc' ? 'ADD_MANY_RUNNING' : 'ADD_MANY', payload: c.timers.map(t=>({label:t.label, ms:t.ms}))});
           added += c.timers.length;
           pushLog('success', `Added ${c.timers.length} timer(s): ${c.timers.map(t=>`${t.label} (${Math.ceil(t.ms/1000)}s)`).join(', ')}`);
           break;

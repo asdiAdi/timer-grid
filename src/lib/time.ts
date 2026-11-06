@@ -7,6 +7,17 @@ export function formatMs(ms: number): string {
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
+// Units are longest-first so "6hrs"/"5mins" consume the whole word instead of just "h"/"m".
+// `d` is guarded so labels like "1 drink" don't parse as 1 day.
+const DURATION_UNITS = 'hours|hour|hrs|hr|h|minutes|minute|mins|min|m|seconds|second|secs|sec|s|days|day|d(?![a-zA-Z])';
+
+// Shared by parseDuration and the parser's command scanning. Groups: 1 = value, 2 = unit.
+export const DURATION_TOKEN_SOURCE = String.raw`\d+:\d+:\d+|\d+:\d+|(\d+(?:\.\d+)?)\s*(${DURATION_UNITS})`;
+
+export function createDurationRegex(): RegExp {
+  return new RegExp(DURATION_TOKEN_SOURCE, 'gi');
+}
+
 export function parseDuration(input: string): number | null {
   const s = input.trim().toLowerCase();
   if (!s) return null;
@@ -27,18 +38,20 @@ export function parseDuration(input: string): number | null {
     }
     return null;
   }
-  // h m s forms: 1h30m, 90s, 2h, 5m, 1h 30m 15s
-  const regex = /(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/gi;
+  // h m s forms: 1h30m, 90s, 2h, 5m, 1h 30m 15s, 1d 6h
+  const regex = createDurationRegex();
   let total = 0;
   let matched = false;
   let mm: RegExpExecArray | null;
   while ((mm = regex.exec(s)) !== null) {
+    if (mm[1] === undefined) continue;
     matched = true;
     const val = parseFloat(mm[1]);
     const unit = mm[2].toLowerCase();
     if (unit.startsWith('h')) total += val*3600000;
     else if (unit.startsWith('m')) total += val*60000;
     else if (unit.startsWith('s')) total += val*1000;
+    else if (unit.startsWith('d')) total += val*86400000;
   }
   if (matched) return Math.round(total);
   // bare number: treat as seconds if < 1000 else ms? convention: 90 => 90s, 90s implicit
